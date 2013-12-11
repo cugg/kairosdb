@@ -174,35 +174,23 @@ public abstract class RangeAggregator implements Aggregator
 
                     case MILLISECONDS:
                         stringBuffer.append(actualDate.get(DateTimeFieldType.millisOfSecond())/ m_sampling.getValue());
-                        while (stringBuffer.length() < 3)
-                            stringBuffer.insert(0, "0");
                     case SECONDS:
                         stringBuffer.insert(0, actualDate.get(DateTimeFieldType.secondOfMinute())/ m_sampling.getValue());
-                        while (stringBuffer.length() < 5)
-                            stringBuffer.insert(0, "0");
                     case MINUTES:
-                        stringBuffer.insert(0, actualDate.get(DateTimeFieldType.minuteOfHour())/ m_sampling.getValue());
-                        while (stringBuffer.length() < 7)
-                            stringBuffer.insert(0, "0");
+                        stringBuffer.insert(0, actualDate.get(DateTimeFieldType.minuteOfHour())/ m_sampling.getValue());;
                     case HOURS:
                         stringBuffer.insert(0, actualDate.get(DateTimeFieldType.hourOfDay())/ m_sampling.getValue());
-                        while (stringBuffer.length() < 9)
-                            stringBuffer.insert(0, "0");
                     case DAYS:
                         stringBuffer.insert(0, (actualDate.get(DateTimeFieldType.dayOfMonth())-1)/ m_sampling.getValue());
 //                    case WEEKS:
 //                        stringBuffer.insert(0, actualDate.get(DateTimeFieldType.weekOfWeekyear()));
-//                        while (stringBuffer.length() < 12)
-//                            stringBuffer.insert(0, "0");
                     case MONTHS:
                         stringBuffer.insert(0, (actualDate.get(DateTimeFieldType.monthOfYear()) - 1)/ m_sampling.getValue());
-                        while (stringBuffer.length() < 12)
-                            stringBuffer.insert(0, "0");
                     case YEARS:
                         stringBuffer.insert(0, actualDate.get(DateTimeFieldType.year())/ m_sampling.getValue());
 
                 }
-                return (new Long(stringBuffer.toString()) );
+                return new Long(stringBuffer.toString());
             } else {
                 return timestamp - m_startTime;
             }
