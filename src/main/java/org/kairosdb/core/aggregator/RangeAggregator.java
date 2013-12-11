@@ -17,6 +17,8 @@
 package org.kairosdb.core.aggregator;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeFieldType;
+import org.joda.time.DateTimeZone;
 import org.kairosdb.core.DataPoint;
 import org.kairosdb.core.datastore.DataPointGroup;
 import org.kairosdb.core.datastore.Sampling;
@@ -34,7 +36,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class RangeAggregator implements Aggregator
 {
 	private long m_startTime = 0L;
-	private long m_range = 1L;
 	private long m_dayOfMonthOffset = 0L; //day of month offset in milliseconds
 	private boolean m_alignSampling;
 
@@ -83,7 +84,6 @@ public abstract class RangeAggregator implements Aggregator
 	public void setSampling(Sampling sampling)
 	{
 		m_sampling = sampling;
-		m_range = sampling.getSampling();
 	}
 
 	public void setAlignSampling(boolean align)
@@ -152,18 +152,60 @@ public abstract class RangeAggregator implements Aggregator
 		 */
 		private long getRange(long timestamp)
 		{
-			if ((m_sampling != null) && (m_sampling.getUnit() == TimeUnit.MONTHS))
-			{
-				m_calendar.setTimeInMillis(timestamp - m_dayOfMonthOffset);
-				int dataPointYear = m_calendar.get(Calendar.YEAR);
-				int dataPointMonth = m_calendar.get(Calendar.MONTH);
+            if (m_sampling != null) {
+                DateTime actualDate = new DateTime(timestamp).withZone(DateTimeZone.forID("UTC"));
 
-				return ((dataPointYear * 12 + dataPointMonth) / m_sampling.getValue());
-			}
-			else
-			{
-				return ((timestamp - m_startTime) / m_range);
-			}
+                if (m_sampling.getTimeZone() != null)
+                    actualDate = actualDate.withZone(DateTimeZone.forTimeZone(m_sampling.getTimeZone()));
+
+                StringBuffer stringBuffer = new StringBuffer();
+                if (m_startTime != 0) {
+                    DateTime startDate = new DateTime(m_startTime).withZone(DateTimeZone.forID("UTC"));
+                    if (m_sampling.getTimeZone() != null)
+                        startDate = startDate.withZone(DateTimeZone.forTimeZone(m_sampling.getTimeZone()));
+                    actualDate = actualDate.minusMillis(startDate.get(DateTimeFieldType.millisOfSecond()));
+                    actualDate = actualDate.minusSeconds(startDate.get(DateTimeFieldType.secondOfMinute()));
+                    actualDate = actualDate.minusMinutes(startDate.get(DateTimeFieldType.minuteOfHour()));
+                    actualDate = actualDate.minusHours(startDate.get(DateTimeFieldType.hourOfDay()));
+                    actualDate = actualDate.minusDays(startDate.get(DateTimeFieldType.dayOfMonth()) - 1);
+                    actualDate = actualDate.minusMonths(startDate.get(DateTimeFieldType.monthOfYear()) - 1);
+                }
+                switch (m_sampling.getUnit()) {
+
+                    case MILLISECONDS:
+                        stringBuffer.append(actualDate.get(DateTimeFieldType.millisOfSecond())/ m_sampling.getValue());
+                        while (stringBuffer.length() < 3)
+                            stringBuffer.insert(0, "0");
+                    case SECONDS:
+                        stringBuffer.insert(0, actualDate.get(DateTimeFieldType.secondOfMinute())/ m_sampling.getValue());
+                        while (stringBuffer.length() < 5)
+                            stringBuffer.insert(0, "0");
+                    case MINUTES:
+                        stringBuffer.insert(0, actualDate.get(DateTimeFieldType.minuteOfHour())/ m_sampling.getValue());
+                        while (stringBuffer.length() < 7)
+                            stringBuffer.insert(0, "0");
+                    case HOURS:
+                        stringBuffer.insert(0, actualDate.get(DateTimeFieldType.hourOfDay())/ m_sampling.getValue());
+                        while (stringBuffer.length() < 9)
+                            stringBuffer.insert(0, "0");
+                    case DAYS:
+                        stringBuffer.insert(0, (actualDate.get(DateTimeFieldType.dayOfMonth())-1)/ m_sampling.getValue());
+//                    case WEEKS:
+//                        stringBuffer.insert(0, actualDate.get(DateTimeFieldType.weekOfWeekyear()));
+//                        while (stringBuffer.length() < 12)
+//                            stringBuffer.insert(0, "0");
+                    case MONTHS:
+                        stringBuffer.insert(0, (actualDate.get(DateTimeFieldType.monthOfYear()) - 1)/ m_sampling.getValue());
+                        while (stringBuffer.length() < 12)
+                            stringBuffer.insert(0, "0");
+                    case YEARS:
+                        stringBuffer.insert(0, actualDate.get(DateTimeFieldType.year())/ m_sampling.getValue());
+
+                }
+                return (new Long(stringBuffer.toString()) );
+            } else {
+                return timestamp - m_startTime;
+            }
 		}
 
 		@Override
