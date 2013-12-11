@@ -16,8 +16,12 @@
 
 package org.kairosdb.core.datastore;
 
+import java.util.TimeZone;
+
 public class Sampling extends Duration
 {
+    private TimeZone timeZone;
+
 	public Sampling()
 	{
 		super();
@@ -27,6 +31,11 @@ public class Sampling extends Duration
 	{
 		super(value, unit);
 	}
+
+    public Sampling(int value, TimeUnit unit, TimeZone timeZone) {
+        super(value, unit);
+        this.timeZone=timeZone;
+    }
 
 	/**
 	 Works for any time unit except month.  Months are special cased in
@@ -51,4 +60,8 @@ public class Sampling extends Duration
 
 		return (val);
 	}
+
+    public TimeZone getTimeZone() {
+        return timeZone;
+    }
 }
