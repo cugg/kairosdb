@@ -135,7 +135,8 @@ function buildKairosDBQuery() {
 					return true;
 				}
 				unit = $(aggregator).find(".aggregatorSamplingUnit").val();
-				metric.addAggregator(name, value, unit);
+                var timeZone = $(aggregator).find(".aggregatorSamplingTimeZone").val();
+				metric.addAggregator(name, value, unit, timeZone);
 			}
 		});
 

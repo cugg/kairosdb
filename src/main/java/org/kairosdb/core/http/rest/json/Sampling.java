@@ -25,6 +25,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.TimeZone;
 
 public class Sampling
 {
@@ -38,14 +39,19 @@ public class Sampling
 	@NotEmpty()
 	private String aggregate;
 
+
+    private String timeZone;
+
 	@JsonCreator
 	public Sampling(@JsonProperty("duration") int duration,
 	                @JsonProperty("unit") String unit,
-	                @JsonProperty("aggregate") String aggregate)
+	                @JsonProperty("aggregate") String aggregate,
+                    @JsonProperty("timeZone") String timeZone)
 	{
 		this.duration = duration;
 		this.unit = unit;
 		this.aggregate = aggregate;
+        this.timeZone = timeZone;
 	}
 
 	public int getDuration()
@@ -62,4 +68,10 @@ public class Sampling
 	{
 		return aggregate;
 	}
+
+    public TimeZone getTimeZone()
+    {
+        if(timeZone!=null)return TimeZone.getTimeZone(timeZone);
+        else return null;
+    }
 }
