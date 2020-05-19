@@ -1,9 +1,7 @@
 
-FAST (2 days) FIX FOR LAMPIRIS.
+QUICK FIX FOR LAMPIRIS.
 
 MADE KAIROS WORK WITH DST AND LEAP YEAR.
-
-WORKING AND USED IN PRODUCTION
 
 KairosDB is a fast distributed scalable time series database written primarily for Cassandra but works with HBase as well.
 
